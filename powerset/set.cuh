@@ -5,7 +5,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <math.h>
-
+#include <ctime>
+#include <omp.h>
 #include "setContainer.cuh"
 
 #define DEBUG
@@ -275,15 +276,55 @@ class Set{
 
         void initializeCofaces(){
             //Initialize host cofaces
+            #ifdef DEBUG
+                std::cout << "Creating set container of size " << size << std::endl;
+            #endif
             cof = new setContainer[size];
+            #ifdef DEBUG
+                std::cout << "Finished creating set container\n";
+            #endif
+            
 
-            int index = 0;
-            for(int i = 0; i < dim + 1; i++){
-                while(index <= dim_end_indecies[i]){
-                    cof[index].createContainer(i+1);
-                    index++;
+            #ifdef DEBUG
+                std::cout << "Initializing set container\n";
+            #endif
+
+
+            int nProcessors = omp_get_max_threads();
+            omp_set_num_threads(nProcessors);
+            #pragma omp parallel for
+            for(int i = 0; i < size; i++){
+                #ifdef DEBUG
+                    int ID = omp_get_thread_num();
+                    printf("Index: %d\t ID: %d\n",i,ID);
+                #endif
+                initializeCoface(i);
+            }
+            #ifdef DEBUG
+                std::cout << std::endl;
+                std::cout << "Set container initialization complete\n";
+            #endif
+        }
+
+        void initializeCoface(int index){
+            //Determine Current Dimension
+            int cur_dim;
+            for(int i = 0; i < dim +1; i++){
+                if(index < dim_end_indecies[i]){
+                    cur_dim = i;
                 }
             }
+            /*#ifdef DEBUG
+                std::cout << "Allocating Dim " << cur_dim << std::endl;
+                time_t start, end;
+                time(&start);
+            #endif*/
+
+            cof[index].createContainer(cur_dim+1);
+            /*#ifdef DEBUG
+                time(&end);
+                std::cout << "Finished Allocating Dim " << cur_dim << "\t Total Time: " << end - start << std::endl;
+            #endif*/
         }
 };
 
