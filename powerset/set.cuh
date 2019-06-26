@@ -9,7 +9,7 @@
 #include <omp.h>
 #include "setContainer.cuh"
 
-#define DEBUG
+//#define DEBUG
 
 template<typename T>
 class Set{
@@ -21,8 +21,11 @@ class Set{
             std::cout << "Setting Indecies\n";
             makeIndex();
             std::cout << "Initializing Cofaces\n";
+            time_t start, finish;
+            time(&start);
             initializeCofaces();
-            std::cout << "Construction Complete\n";
+            time(&finish);
+            std::cout << "Construction Complete: " << finish - start << std::endl;
         }
 
         Set(){}
@@ -294,10 +297,6 @@ class Set{
             omp_set_num_threads(nProcessors);
             #pragma omp parallel for
             for(int i = 0; i < size; i++){
-                #ifdef DEBUG
-                    int ID = omp_get_thread_num();
-                    printf("Index: %d\t ID: %d\n",i,ID);
-                #endif
                 initializeCoface(i);
             }
             #ifdef DEBUG
@@ -310,10 +309,18 @@ class Set{
             //Determine Current Dimension
             int cur_dim;
             for(int i = 0; i < dim +1; i++){
-                if(index < dim_end_indecies[i]){
+                if(index <= dim_end_indecies[i]){
                     cur_dim = i;
+                    break;
                 }
             }
+
+            #ifdef DEBUG
+                int ID = omp_get_thread_num();
+                printf("Index: %d\t ID: %d\t Dim: %d\n",index,ID,cur_dim);
+            #endif
+
+
             /*#ifdef DEBUG
                 std::cout << "Allocating Dim " << cur_dim << std::endl;
                 time_t start, end;

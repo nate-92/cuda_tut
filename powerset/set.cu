@@ -3,7 +3,7 @@
 
 
 int main(){
-    std::vector<int> set(700);
+    std::vector<int> set(698);
     for(int i = 0; i < set.size(); i++){
         set[i] = i+1;
     }
@@ -16,7 +16,7 @@ int main(){
         std::cout << "Locating Cofaces\n";
         std::cout << "Local Vec Size: " << h_s->getVecSize() << "\tLocal Dim: " << h_s->getDim() << std::endl;
         display<<<1,1>>>(d_s);
-        #endif
+    #endif
 
     sync();
 
@@ -28,7 +28,7 @@ int main(){
     #endif
 
     h_s = setToHost(d_s);
-    //h_s->display();
+    h_s->display();
 
 
     std::vector<int> * cofaces = h_s->getCofaces(set);
